@@ -31,7 +31,7 @@ namespace ServerNotifier
                     case "--player-count-trigger":
                         notifier.PlayerCountTrigger = byte.Parse(args[++i]);
                         break;
-                    case "-d:":
+                    case "-d":
                     case "--update-delay":
                         notifier.UpdateDelay = TimeSpan.FromSeconds(double.Parse(args[++i]));
                         break;
