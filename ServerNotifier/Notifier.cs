@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Steam.Query;
@@ -11,6 +12,7 @@ namespace ServerNotifier
     {
         #region Fields
         private readonly Dictionary<Server, byte> playerCounts = new Dictionary<Server, byte>();
+        private readonly Server.GetServerInfoSettings infoSettings = new Server.GetServerInfoSettings();
         #endregion
 
         #region Properties
@@ -46,19 +48,23 @@ namespace ServerNotifier
 
             Parallel.ForEach(Servers, server =>
             {
-                ServerInfoResult info = server.GetServerInfo().Result;
+                try
+                {
+                    ServerInfoResult info = server.GetServerInfoSync(infoSettings);
 
-                if (playerCounts.ContainsKey(server) && info.Players == playerCounts[server])
-                    return;
+                    if (playerCounts.ContainsKey(server) && info.Players == playerCounts[server])
+                        return;
 
-                playerCounts[server] = info.Players;
+                    playerCounts[server] = info.Players;
 
-                if (info.Players >= PlayerCountTrigger)
-                    PlayerCountReached?.Invoke(this, new EventData
-                    {
-                        Server = server,
-                        Info = info
-                    });
+                    if (info.Players >= PlayerCountTrigger)
+                        PlayerCountReached?.Invoke(this, new EventData
+                        {
+                            Server = server,
+                            Info = info
+                        });
+                }
+                catch (SocketException e) when (e.SocketErrorCode == SocketError.TimedOut) { }
             });
         }
 
