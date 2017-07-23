@@ -64,7 +64,7 @@ namespace ServerNotifier
                             Info = info
                         });
                 }
-                catch (SocketException e) when (e.SocketErrorCode == SocketError.TimedOut) { }
+                catch (SocketException e) when (e.SocketErrorCode == SocketError.TimedOut || e.SocketErrorCode == SocketError.ConnectionRefused) { }
             });
         }
 
